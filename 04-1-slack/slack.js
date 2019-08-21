@@ -29,29 +29,20 @@ io.on("connection", socket => {
 // loop through each namespace and listen for a connection
 namespaces.forEach(namespace => {
   io.of(namespace.endpoint).on("connection", nsSocket => {
-    console.log(`${nsSocket.id} has join ${namespace.endpoint}`);
     // a socket has connected to one of our chatgroup namespaces
     // send that ns group info back
-    nsSocket.emit("nsRoomLoad", namespaces[0].rooms);
+    nsSocket.emit("nsRoomLoad", namespace.rooms);
     nsSocket.on("joinRoom", (roomToJoin, numberOfUsersCallback) => {
+      const roomToLeave = Object.keys(nsSocket.rooms)[1];
+      nsSocket.leave(roomToLeave);
+      updateUsersInRoom(namespace, roomToLeave);
+
       nsSocket.join(roomToJoin);
-      // io.of("/wiki")
-      //   .in(roomToJoin)
-      //   .clients((err, clients) => {
-      //     numberOfUsersCallback(clients.length);
-      //   });
       const nsRoom = namespace.rooms.find(
         room => room.roomTitle === roomToJoin
       );
       nsSocket.emit("historyCatchUp", nsRoom.history);
-      // send back the number of users in this room to all sockets connected to this room
-      io.of("/wiki")
-        .in(roomToJoin)
-        .clients((err, clients) => {
-          io.of("/wiki")
-            .in(roomToJoin)
-            .emit("updateMembers", clients.length);
-        });
+      updateUsersInRoom(namespace, roomToJoin);
     });
 
     nsSocket.on("newMessageToServer", msg => {
@@ -72,9 +63,20 @@ namespaces.forEach(namespace => {
       const nsRoom = namespace.rooms.find(room => room.roomTitle === roomTitle);
       nsRoom.addMessage(fullMsg);
 
-      io.of("/wiki")
+      io.of(namespace.endpoint)
         .to(roomTitle)
         .emit("messageToClients", fullMsg);
     });
   });
 });
+
+function updateUsersInRoom(namespace, roomToJoin) {
+  // send back the number of users in this room to all sockets connected to this room
+  io.of(namespace.endpoint)
+    .in(roomToJoin)
+    .clients((err, clients) => {
+      io.of(namespace.endpoint)
+        .in(roomToJoin)
+        .emit("updateMembers", clients.length);
+    });
+}
