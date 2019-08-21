@@ -35,10 +35,22 @@ namespaces.forEach(namespace => {
     nsSocket.emit("nsRoomLoad", namespaces[0].rooms);
     nsSocket.on("joinRoom", (roomToJoin, numberOfUsersCallback) => {
       nsSocket.join(roomToJoin);
+      // io.of("/wiki")
+      //   .in(roomToJoin)
+      //   .clients((err, clients) => {
+      //     numberOfUsersCallback(clients.length);
+      //   });
+      const nsRoom = namespace.rooms.find(
+        room => room.roomTitle === roomToJoin
+      );
+      nsSocket.emit("historyCatchUp", nsRoom.history);
+      // send back the number of users in this room to all sockets connected to this room
       io.of("/wiki")
         .in(roomToJoin)
         .clients((err, clients) => {
-          numberOfUsersCallback(clients.length);
+          io.of("/wiki")
+            .in(roomToJoin)
+            .emit("updateMembers", clients.length);
         });
     });
 
@@ -55,6 +67,11 @@ namespaces.forEach(namespace => {
       // this is because the socket always joins its own room on connections
       // get the keys
       const roomTitle = Object.keys(nsSocket.rooms)[1];
+
+      // we need to find the Room object for this room
+      const nsRoom = namespace.rooms.find(room => room.roomTitle === roomTitle);
+      nsRoom.addMessage(fullMsg);
+
       io.of("/wiki")
         .to(roomTitle)
         .emit("messageToClients", fullMsg);
