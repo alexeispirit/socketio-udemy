@@ -36,6 +36,11 @@ socket.on("connect", () => {
   // client auth with simple key value
   socket.emit("clientAuth", "key");
 
+  performanceData().then(pData => {
+    pData.mac = mac;
+    socket.emit("initPerfData", pData);
+  });
+
   // start sending data over
   let perfDataInterval = setInterval(() => {
     performanceData().then(pData => {
