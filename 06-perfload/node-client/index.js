@@ -34,7 +34,7 @@ socket.on("connect", () => {
   }
 
   // client auth with simple key value
-  socket.emit("clientAuth", "key");
+  socket.emit("clientAuth", "node");
 
   performanceData().then(pData => {
     pData.mac = mac;

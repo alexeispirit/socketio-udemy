@@ -7,10 +7,10 @@ function socketMain(io, socket) {
   let mac;
   // console.log("A socket connected", socket.id);
   socket.on("clientAuth", key => {
-    if (key) {
+    if (key === "node") {
       // valid nodeClient
       socket.join("clients");
-    } else if (key) {
+    } else if (key === "react") {
       // valid ui client
       socket.join("ui");
     } else {
@@ -29,7 +29,9 @@ function socketMain(io, socket) {
     console.log(mongooseResponse);
   });
 
-  socket.on("perfData", console.log);
+  socket.on("perfData", data => {
+    io.to("ui").emit("data", data);
+  });
 }
 
 function checkAndAdd(data) {
