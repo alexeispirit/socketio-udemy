@@ -1,5 +1,4 @@
 import React from "react";
-import logo from "./logo.svg";
 import "./App.css";
 import socket from "./utilities/socketConnection";
 import Widget from "./Widget";
@@ -14,16 +13,21 @@ class App extends React.Component {
 
   componentDidMount() {
     socket.on("data", data => {
-      console.log(data);
+      // inside this callback we got new data
+      const currentState = { ...this.state.performanceData };
+      currentState[data.mac] = data;
+      this.setState({ performanceData: currentState });
     });
   }
 
   render() {
-    return (
-      <div className="App">
-        <Widget />
-      </div>
-    );
+    let widgets = [];
+    const data = this.state.performanceData;
+    Object.entries(data).forEach(([key, value]) => {
+      widgets.push(<Widget key={key} data={value} />);
+    });
+
+    return <div className="App">{widgets}</div>;
   }
 }
 

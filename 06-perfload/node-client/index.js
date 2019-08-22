@@ -44,6 +44,7 @@ socket.on("connect", () => {
   // start sending data over
   let perfDataInterval = setInterval(() => {
     performanceData().then(pData => {
+      pData.mac = mac;
       socket.emit("perfData", pData);
     });
   }, 1000);
