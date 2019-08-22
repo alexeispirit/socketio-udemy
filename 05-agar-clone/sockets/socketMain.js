@@ -114,11 +114,26 @@ io.sockets.on("connect", socket => {
         .then(data => {
           // every socket needs to know the leader board has changed
           io.sockets.emit("updateLeaderBoard", getLeaderBoard());
+          // a player was absorbed. let everybody know
+          io.sockets.emit("playerDeath", data);
         })
         .catch(() => {
           // no collision
         });
     });
+  });
+
+  socket.on("disconnect", data => {
+    // find out who just left... which player in players
+    if (player.playerData) {
+      players.forEach((curPlayer, i) => {
+        if (curPlayer.uid === player.playerData.uid) {
+          players.splice(i, 1);
+          io.sockets.emit("updateLeaderBoard", getLeaderBoard());
+        }
+      });
+      // update stats in database if needed
+    }
   });
 });
 
