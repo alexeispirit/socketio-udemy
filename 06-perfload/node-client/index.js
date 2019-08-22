@@ -22,6 +22,26 @@ let socket = io("http://127.0.0.1:8181");
 
 socket.on("connect", () => {
   console.log("I connected to sockets server");
+  // we need a way to identify this machine to whomever concerned
+  const nI = os.networkInterfaces();
+  let mac;
+  // loop though all the nI for this machine and find a non-internal one
+  for (let key in nI) {
+    if (!nI[key][0].internal) {
+      mac = nI[key][0].mac;
+      break;
+    }
+  }
+
+  // client auth with simple key value
+  socket.emit("clientAuth", "key");
+
+  // start sending data over
+  let perfDataInterval = setInterval(() => {
+    performanceData().then(pData => {
+      socket.emit("perfData", pData);
+    });
+  }, 1000);
 });
 
 function performanceData() {
