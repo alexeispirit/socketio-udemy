@@ -20,8 +20,16 @@ socket.on("initReturn", data => {
   }, 33);
 });
 
-socket.on("talk", data => {
+socket.on("tock", data => {
   players = data.players;
+});
+
+socket.on("orbSwitch", data => {
+  console.log(data);
+  orbs.splice(data.orbIndex, 1, data.newOrb);
+});
+
+socket.on("tickTock", data => {
   player.locX = data.playerX;
   player.locY = data.playerY;
 });

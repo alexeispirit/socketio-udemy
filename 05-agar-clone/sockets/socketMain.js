@@ -14,15 +14,24 @@ let orbs = [];
 let players = [];
 
 let settings = {
-  defaultOrbs: 500,
+  defaultOrbs: 5000,
   defaultSpeed: 6,
   defaultSize: 6,
   defaultZoom: 1.5,
-  worldWidth: 500,
-  worldHeight: 500
+  worldWidth: 5000,
+  worldHeight: 5000
 };
 
 initGame();
+
+// issue a message to every connected socket 30fps
+setInterval(() => {
+  if (players.length > 0) {
+    io.to("game").emit("tock", {
+      players
+    });
+  }
+}, 33);
 
 io.sockets.on("connect", socket => {
   let player = {};
@@ -37,10 +46,9 @@ io.sockets.on("connect", socket => {
     // make a master player object to hold both
     player = new Player(socket.id, playerConfig, playerData);
 
-    // issue a message to every connected socket 30 fps
+    // issue a message to this client with location 30fps
     setInterval(() => {
-      io.to("game").emit("talk", {
-        players,
+      socket.emit("tickTock", {
         playerX: player.playerData.locX,
         playerY: player.playerData.locY
       });
@@ -49,7 +57,7 @@ io.sockets.on("connect", socket => {
     socket.emit("initReturn", { orbs });
     players.push(playerData);
 
-    // server sent over a tick. that means we know what direction to move the player
+    // client sent over a tick. that means we know what direction to move the player
     socket.on("tick", data => {
       speed = player.playerConfig.speed;
       // update the playerConfig object with new direction in data
@@ -59,18 +67,52 @@ io.sockets.on("connect", socket => {
 
       if (
         (player.playerData.locX < 5 && player.playerData.xVector < 0) ||
-        (player.playerData.locX > 500 && xV > 0)
+        (player.playerData.locX > settings.worldWidth && xV > 0)
       ) {
         player.playerData.locY -= speed * yV;
       } else if (
         (player.playerData.locY < 5 && yV > 0) ||
-        (player.playerData.locY > 500 && yV < 0)
+        (player.playerData.locY > settings.worldHeight && yV < 0)
       ) {
         player.playerData.locX += speed * xV;
       } else {
         player.playerData.locX += speed * xV;
         player.playerData.locY -= speed * yV;
       }
+
+      // ORB COLLISION
+      let capturedOrb = checkForOrbCollisions(
+        player.playerData,
+        player.playerConfig,
+        orbs,
+        settings
+      );
+      capturedOrb
+        .then(data => {
+          // a collision happened
+          // emit to all sockets the orb to replace
+          const orbData = {
+            orbIndex: data,
+            newOrb: orbs[data]
+          };
+          io.sockets.emit("orbSwitch", orbData);
+        })
+        .catch(() => {
+          // no collision
+        });
+
+      // PLAYER COLLISION
+      let playerDeath = checkForPlayerCollisions(
+        player.playerData,
+        player.playerConfig,
+        players,
+        player.socketId
+      );
+      playerDeath
+        .then(data => {})
+        .catch(() => {
+          // no collision
+        });
     });
   });
 });
