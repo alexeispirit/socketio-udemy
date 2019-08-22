@@ -16,6 +16,13 @@
 // - clock speed
 
 const os = require("os");
+const io = require("socket.io-client");
+
+let socket = io("http://127.0.0.1:8181");
+
+socket.on("connect", () => {
+  console.log("I connected to sockets server");
+});
 
 function performanceData() {
   return new Promise(async (resolve, reject) => {
@@ -73,5 +80,3 @@ function getCpuLoad() {
     }, 100);
   });
 }
-
-performanceData().then(console.log);
