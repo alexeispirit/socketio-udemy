@@ -42,6 +42,10 @@ socket.on("connect", () => {
       socket.emit("perfData", pData);
     });
   }, 1000);
+
+  socket.on("disconnect", () => {
+    clearInterval(perfDataInterval);
+  });
 });
 
 function performanceData() {
