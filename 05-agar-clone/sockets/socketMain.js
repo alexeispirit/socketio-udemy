@@ -95,6 +95,8 @@ io.sockets.on("connect", socket => {
             orbIndex: data,
             newOrb: orbs[data]
           };
+          // every socket needs to know the leader board has changed
+          io.sockets.emit("updateLeaderBoard", getLeaderBoard());
           io.sockets.emit("orbSwitch", orbData);
         })
         .catch(() => {
@@ -109,13 +111,28 @@ io.sockets.on("connect", socket => {
         player.socketId
       );
       playerDeath
-        .then(data => {})
+        .then(data => {
+          // every socket needs to know the leader board has changed
+          io.sockets.emit("updateLeaderBoard", getLeaderBoard());
+        })
         .catch(() => {
           // no collision
         });
     });
   });
 });
+
+function getLeaderBoard() {
+  // sort players in desc order
+  players.sort((a, b) => b.score - a.score);
+  let leaderBoard = players.map(curPlayer => {
+    return {
+      name: curPlayer.name,
+      score: curPlayer.score
+    };
+  });
+  return leaderBoard;
+}
 
 function initGame() {
   for (let i = 0; i < settings.defaultOrbs; i++) {

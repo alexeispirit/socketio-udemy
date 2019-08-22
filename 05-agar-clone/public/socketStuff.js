@@ -33,3 +33,13 @@ socket.on("tickTock", data => {
   player.locX = data.playerX;
   player.locY = data.playerY;
 });
+
+socket.on("updateLeaderBoard", data => {
+  const leaderBoard = document.querySelector(".leader-board");
+  leaderBoard.innerHTML = "";
+  data.forEach(curPlayer => {
+    leaderBoard.innerHTML += `
+      <li class="leaderboard-player">${curPlayer.name} - ${curPlayer.score}</li>
+    `;
+  });
+});
