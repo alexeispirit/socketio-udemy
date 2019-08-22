@@ -21,14 +21,31 @@ function socketMain(io, socket) {
 
   // a machine has connected, check to see if it is new
   // if it is, add it
-  socket.on("initPerfData", data => {
+  socket.on("initPerfData", async data => {
     // update socket connect function scoped variable
     mac = data.mac;
     // now go check mongo
-    checkAndAdd(data);
+    const mongooseResponse = await checkAndAdd(data);
+    console.log(mongooseResponse);
   });
 
   socket.on("perfData", console.log);
+}
+
+function checkAndAdd(data) {
+  return new Promise((resolve, reject) => {
+    Machine.findOne({ mac: data.mac }, (err, doc) => {
+      if (err) {
+        throw err;
+      } else if (doc === null) {
+        let newMachine = new Machine(data);
+        newMachine.save();
+        resolve("added");
+      } else {
+        resolve("found");
+      }
+    });
+  });
 }
 
 module.exports = socketMain;
