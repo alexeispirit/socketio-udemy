@@ -2,3 +2,76 @@
 // req:
 // farmhash
 // socket.io-client
+
+// performance
+// - CPU Load
+// - Memory usage
+// - free
+// - total
+// - OS type
+// - uptime
+// - CPU info
+// - type
+// - number of cores
+// - clock speed
+
+const os = require("os");
+
+function performanceData() {
+  return new Promise(async (resolve, reject) => {
+    const cpus = os.cpus();
+
+    const perfData = {
+      osType: os.type(),
+      upTime: os.uptime(),
+      freeMem: os.freemem(),
+      totalMem: os.totalmem(),
+      usedMem: os.totalmem() - os.freemem(),
+      memUsage: Math.floor((os.totalmem() / os.freemem()) * 100) / 100,
+      cpuModel: cpus[0].model,
+      numCores: cpus.length,
+      cpuSpeed: cpus[0].speed
+    };
+
+    perfData.cpuLoad = await getCpuLoad();
+
+    resolve(perfData);
+  });
+}
+
+// cpus is all cores. we need the average of all the cores which
+// will give us the cpu average
+function cpuAverage() {
+  const cpus = os.cpus();
+  // get ms in each mode, but this number is since reboot
+  // so get it now and get it in 100ms and compare
+  let idleMs = 0;
+  let totalMs = 0;
+  // loop through each core
+  cpus.forEach(aCore => {
+    for (type in aCore.times) {
+      totalMs += aCore.times[type];
+    }
+    idleMs += aCore.times.idle;
+  });
+  return {
+    idle: idleMs / cpus.length,
+    total: totalMs / cpus.length
+  };
+}
+
+function getCpuLoad() {
+  return new Promise((resolve, reject) => {
+    const start = cpuAverage();
+    setTimeout(() => {
+      const end = cpuAverage();
+      const idleDifference = end.idle - start.idle;
+      const totalDifference = end.total - start.total;
+      const percentageCpu =
+        100 - Math.floor((100 * idleDifference) / totalDifference);
+      resolve(percentageCpu);
+    }, 100);
+  });
+}
+
+performanceData().then(console.log);
