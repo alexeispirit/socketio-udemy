@@ -9,8 +9,8 @@ function Cpu(props) {
     <div className="col-sm-3 cpu">
       <h3>CPU load</h3>
       <div className="canvas-wrapper">
-        <canvas className="canvas" />
-        <div className="cpu-text">{props.cpuData.cpuLoad}</div>
+        <canvas className="canvas" width="200" height="200" />
+        <div className="cpu-text">{props.cpuData.cpuLoad}%</div>
       </div>
     </div>
   );

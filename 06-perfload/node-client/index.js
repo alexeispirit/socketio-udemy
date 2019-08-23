@@ -64,7 +64,9 @@ function performanceData() {
       freeMem: os.freemem(),
       totalMem: os.totalmem(),
       usedMem: os.totalmem() - os.freemem(),
-      memUsage: Math.floor((os.totalmem() / os.freemem()) * 100) / 100,
+      memUsage:
+        Math.floor(((os.totalmem() - os.freemem()) / os.totalmem()) * 100) /
+        100,
       cpuModel: cpus[0].model,
       numCores: cpus.length,
       cpuSpeed: cpus[0].speed
