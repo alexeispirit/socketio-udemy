@@ -23,16 +23,23 @@ class Widget extends React.Component {
       numCores,
       cpuSpeed,
       cpuLoad,
-      mac
+      mac,
+      isActive
     } = this.props.data;
 
-    const cpu = { cpuLoad };
-    const mem = { totalMem, usedMem, memUsage, freeMem };
+    const cpuWidgetId = `cpu-widget-${mac}`;
+    const memWidgetId = `mem-widget-${mac}`;
+
+    const cpu = { cpuLoad, cpuWidgetId };
+    const mem = { memWidgetId, totalMem, usedMem, memUsage, freeMem };
     const info = { mac, osType, upTime, cpuModel, cpuSpeed, numCores };
 
+    let notActiveDiv = null;
+    if (!isActive) notActiveDiv = <div className="not-active">Offline</div>;
+
     return (
-      <div>
-        <h1>Widget!!</h1>
+      <div className="widget col-sm-12">
+        {notActiveDiv}
         <Cpu cpuData={cpu} />
         <Mem memData={mem} />
         <Info infoData={info} />

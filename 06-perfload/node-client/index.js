@@ -27,6 +27,11 @@ socket.on("connect", () => {
   let mac;
   // loop though all the nI for this machine and find a non-internal one
   for (let key in nI) {
+    // FOR TESTING ONLY
+    mac = Math.floor(Math.random() * 3) + 1;
+    break;
+    // FOR TESTING ONLY
+
     if (!nI[key][0].internal) {
       mac = nI[key][0].mac;
       break;
@@ -69,7 +74,8 @@ function performanceData() {
         100,
       cpuModel: cpus[0].model,
       numCores: cpus.length,
-      cpuSpeed: cpus[0].speed
+      cpuSpeed: cpus[0].speed,
+      isActive: true
     };
 
     perfData.cpuLoad = await getCpuLoad();

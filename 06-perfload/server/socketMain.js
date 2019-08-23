@@ -13,10 +13,25 @@ function socketMain(io, socket) {
     } else if (key === "react") {
       // valid ui client
       socket.join("ui");
+      Machine.find({}, (err, docs) => {
+        docs.forEach(machine => {
+          machine.isActive = false;
+          io.to("ui").emit("data", machine);
+        });
+      });
     } else {
       // invalid client
       socket.disconnect(true);
     }
+  });
+
+  socket.on("disconnect", () => {
+    Machine.find({ mac: mac }, (err, docs) => {
+      if (docs.length > 0) {
+        docs[0].isActive = false;
+        io.to("ui").emit("data", docs[0]);
+      }
+    });
   });
 
   // a machine has connected, check to see if it is new
