@@ -3,6 +3,8 @@ import Cpu from "./Cpu";
 import Mem from "./Mem";
 import Info from "./Info";
 
+import "./widget.css";
+
 class Widget extends React.Component {
   constructor() {
     super();
